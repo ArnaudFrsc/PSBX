@@ -1,0 +1,174 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# **Forecast Leaflet**
+
+## *Done by Arnaud Forasacco*
+
+### **20th of December 2020**
+
+# Présentation
+
+### Leaflet is one of the most popular open-source JavaScript libraries for interactive maps. It’s used by websites ranging from The New York Times and The Washington Post to GitHub and Flickr, as well as GIS specialists like OpenStreetMap, Mapbox, and CartoDB.
+
+### This R package makes it easy to integrate and control Leaflet maps in R.
+
+### In the first place we are going to install the package that will allow us to create our interactive maps :
+
+```{r}
+library(leaflet)
+```
+
+### We are going to create our variable and display the default leaflet map.
+
+
+```{r}
+m0 <-leaflet() %>%
+  addTiles()
+
+m0
+```
+
+### Import the mock data dowloaded from Mockaroo :
+
+
+```{r}
+data <- read.csv("C://Cours/R/MOCK_DATA.csv")
+
+```
+
+### Sort out missing values because it can bring up some issues later :
+
+```{r}
+data <- data[complete.cases(data),]
+```
+
+### = No missing values
+
+### Now we will make sure that our dataframe is noted as numeric :
+
+```{r}
+data$long <- as.numeric(data$long)
+data$lat <- as.numeric(data$lat)
+```
+
+```{r,include=FALSE}
+data
+```
+
+
+### Place the markers with the lattitude and the longitude in the data frame :
+
+
+```{r}
+m1 <- leaflet() %>% 
+  addTiles() %>%
+  addMarkers(data = data, lng= ~long, lat= ~lat, popup = ~last_name )
+```
+
+### Display the map :
+
+```{r}
+m1
+```
+
+### Change the map style via the link :
+### http://leaflet-extras.github.io/leaflet-providers/preview/index.html
+
+
+```{r}
+m2 <- leaflet() %>%
+  addProviderTiles("Esri.DeLorme")
+
+m2
+```
+
+### Setting a particular location on the map :
+
+```{r}
+map <- leaflet() %>%
+  addTiles() %>%
+  setView(lng= 78.0419, lat=27.1750 ,zoom=15)
+  addMarkers(map= map,lng= 78.0419, lat=27.1750 ,popup="Taj Mahal")
+```
+  
+### We saw before that we had a lot of markers at the same place but it did not cluster so this is what we are going to do.
+
+### For the following functions, we will use another database to show the best utility possible.
+
+### We do the same procedure as before.
+
+
+```{r}
+quakes <- read.csv("C:/Cours/R/all_week.csv")
+
+quakes <- quakes[complete.cases(quakes),]
+
+quakes$longitude <- as.numeric(quakes$longitude)
+quakes$latitude <- as.numeric(quakes$latitude)
+```
+
+
+```{r,include=FALSE}
+quakes
+```
+
+### And now we will display the map
+
+```{r}
+m3 <- leaflet(data = quakes) %>% 
+  addTiles() %>%
+  addCircleMarkers(lng=~longitude, lat= ~latitude,clusterOptions = markerClusterOptions())
+
+m3
+```
+  
+### We can now see that all our markers are now clustered and we see things more properly.
+
+
+### We also have an option to circle things on the map for this function I will take cities around the world.
+
+```{r}
+city <- read.csv("C:/Cours/R/fr.csv",sep=",")
+
+city <- city[complete.cases(city),]
+```
+
+
+```{r,include=FALSE}
+city
+```
+
+### The dataframe has some values missing no we will change the N/A into a 0
+
+```{r}
+city[is.na(city)] <- 0
+```
+
+### We will after that continue by making sure that the data is marked as numeric :
+
+```{r}
+city$lng <- as.numeric(city$lng)
+city$lat <- as.numeric(city$lat)
+```
+
+### Now that we did all the preparation, we will display the map with the some options that I selected but there are more.
+
+```{r}
+m4 <- leaflet(data = city) %>% 
+  addTiles() %>%
+  addCircles(lng=~lng, 
+            lat= ~lat,
+            fillColor ="transparent",
+            radius =~sqrt(population)*20)
+
+m4
+```
+
+### We can then see the population of a city compared to another one.
+
+## This concludes my presentation of Leaflet !
+
+# Thank you for looking into this presentation !

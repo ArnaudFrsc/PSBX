@@ -1,0 +1,128 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# **Forecast package et séries temporelles**
+
+## *Fait par Arnaud et Nina*
+
+### **20 Novembre 2020**
+
+## Présentation
+
+Le package "Forecast" est fait de méthodes et outils pour afficher et analyser des prévisions de séries temporelles univariées, y compris le lissage exponentiel via des modèles d'espace d'états et la modélisation automatique ARIMA.
+
+### Importation des packages désirés
+```{r}
+library(fpp2)
+```
+
+### Importation des données
+```{r}
+groupe_st = read.csv("C:/Users/jfurs/r/groupest.csv",sep = ";", header =T)
+```
+
+### Montrer les données de la dataframe
+```{r}
+attach(groupe_st)
+str(groupe_st)
+```
+
+### Modification de l'intitulé des variables
+```{r}
+names(groupe_st)[1]="Mois"
+names(groupe_st)[2]="CDG"
+names(groupe_st)[3]="ORLY"
+```
+
+### Vérification du type de données
+```{r}
+class(Total)
+```
+
+### Changement du type de données
+Ici, on veut changer le type de données car on veut travailler avec des chiffres et si les données sont de type "character", ne ne pourrons pas afficher les graphiques proprement.
+```{r}
+groupe_st$Total=sub(" ","",groupe_st$Total)
+groupe_st$Total <- as.factor(groupe_st$Total)
+```
+
+### Création de la série temporelle
+Une série temporelle est une collection de données otenue de manière
+s´equentielle au cours du temps.
+Il y a donc typiquement deux variables associées : une variable quantitative dont les données sont dépendantes et une variable ”temps”.
+
+Nous trouverons donc par exemple : des données météorologiques, des données financières, des phénomènes ondulatoires (son, signal neuronique, etc), des suivi de populations...
+
+```{r}
+Y <- ts(groupe_st[,4],start=c(2000,1), frequency=12)
+```
+
+### Représentation graphique de ma data
+````{r}
+autoplot(Y) + ylab("Traffic")
+```
+
+### vérification plus  précise de la différence
+
+```{r}
+DY <-diff(Y)
+autoplot(DY) + ggtitle("Change in Air Traffic") + ylab("Flights")
+```
+
+### Vérification de la saisonnalité
+```{r}
+ggseasonplot(DY) + ggtitle("Seasonal plot : Change in Air Traffic over the years") + ylab("Flights") + xlab("Time")
+```
+
+## Après avoir vu les différents facteurs d'évolution de la courbe, il est temps de faire les prédictions.
+## Il existe plusieurs méthodes pour faire des prédictions : Naive, ETS (Exponential Smoothing algorithm) et le modèle ARIMA. Nous allons donc voir ces 3 modèles de prédiction.
+
+### la "naive model" méthode
+I s'agit d'une technique d'estimation dans laquelle les chiffres réels de la dernière période sont utilisés comme prévision de cette période, sans les ajuster ni tenter d'établir des facteurs de causalité. Il n'est utilisé qu'à des fins de comparaison avec les prévisions générées par les meilleures techniques (sophistiquées).
+```{r}
+fit_n <- snaive(Y)
+print(summary(fit_n))
+checkresiduals(fit_n) #residual SD : 51,85
+```
+### Représentation graphique
+
+```{r}
+fcts_n <- forecast(fit_n, h=12)
+autoplot(fcts_n)
+```
+
+### la "ets model" méthode
+La fonction .ETS est l'une des fonctions statistiques qui est utilisée pour prédire une valeur future en fonction des valeurs existantes (historiques) à l’aide de la version AAA de l’algorithme de lissage exponentiel (Exponential Smoothing, ETS).
+
+```{r}
+fit_ets <- ets(Y)
+print(summary(fit_ets))
+checkresiduals(fit_ets) # residual SD = 0.3098
+```
+
+### Représentation graphique
+```{r}
+fcts_ets <- forecast(fit_ets, h=12)
+autoplot(fcts_ets)
+```
+
+### La "arima model" méthode
+
+```{r}
+fit_arima <- auto.arima(Y)
+print(summary(fit_arima))
+checkresiduals(fit_arima) # residual SD = sqrt(1488) = 38,57
+```
+
+### Représentation graphique
+
+```{r}
+fcts_arima <- forecast(fit_arima,h=12)
+autoplot(fcts_arima)
+```
+
+# Voici qui conclu ma présentation du package Forecast.
+
+# Merci d'avoir consulté ce document !
